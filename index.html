@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080609">
+<title>Nazlı ♡ | Her dilde seni seviyorum</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#080609;color:#ffe4e8;font-family:Inter,system-ui,Arial,sans-serif;overflow-x:hidden}
+body{background:radial-gradient(ellipse at 50% 43%,#310912 0%,#11070c 40%,#070609 78%);min-height:100svh}
+main{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 12px 35px}
+.eyebrow{letter-spacing:.35em;text-transform:uppercase;font-size:10px;color:#dd8394;text-align:center;margin:0 0 5px}
+h1{font-size:clamp(23px,4vw,36px);font-weight:500;letter-spacing:.07em;margin:0;text-align:center}
+.sub{font-size:12px;color:#c58b99;text-align:center;margin:8px 0 0}
+.stage{width:min(96vw,800px);height:min(70vh,650px);min-height:350px;position:relative;isolation:isolate}
+#heart{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 0 7px #f43b5060)}
+.word{fill:#ff6577;font-family:Arial,sans-serif;font-size:12px;font-weight:600;text-anchor:middle;opacity:0;transition:opacity .6s ease;user-select:none}
+.word.visible{opacity:1}.word.glow{fill:#ff99a5}
+.center{position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);text-align:center;opacity:0;transition:opacity 1.4s;pointer-events:none;white-space:nowrap}
+.center.show{opacity:1}.center strong{font-family:Georgia,serif;font-style:italic;font-weight:400;font-size:clamp(22px,4vw,39px);color:#ffd6df;text-shadow:0 0 25px #f04d7188}
+.center small{display:block;font-size:11px;letter-spacing:.2em;color:#c68b9a;margin-top:8px}
+#beat{transform-origin:50% 50%}#beat.beating{animation:beat 2.6s ease-in-out infinite}@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.045)}22%{transform:scale(1)}32%{transform:scale(1.025)}45%{transform:scale(1)}}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:-14px;z-index:2}
+button{border:1px solid #8e3d50;background:#32131e;color:#ffe0e6;padding:11px 19px;border-radius:999px;font-size:13px;cursor:pointer;transition:.2s}button:hover{background:#542132;transform:translateY(-2px)}
+.note{font-size:11px;color:#a87986;text-align:center;margin-top:15px}
+.spark{position:absolute;border-radius:50%;width:3px;height:3px;background:#f59aab;opacity:.25;pointer-events:none;animation:float 5s ease-in-out infinite alternate}
+@keyframes float{to{transform:translateY(-17px);opacity:.65}}
+@media(max-width:600px){.stage{height:54vh;min-height:320px}.word{font-size:12px}.controls{margin-top:0}.center{top:46%}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<p class="eyebrow">20 dil • tek bir his</p>
+<h1>Her dilde, hep sen ♡</h1>
+<p class="sub">Bazı şeyler hangi dilde söylense de aynı hissettirir.</p>
+<div class="stage" id="stage">
+<svg id="heart" viewBox="0 0 800 650" role="img" aria-label="Farklı dillerde seni seviyorum yazılarından oluşan kalp">
+<g id="beat"><g id="words"></g></g></svg>
+<div class="center" id="center"><strong>Nazlı ♡</strong><small>iyi ki varsın</small></div>
+</div>
+<div class="controls"><button id="replay">↻ Yeniden oynat</button><button id="toggle">♡ Kalbi durdur</button></div>
+<p class="note">Senin için, sevginin bütün dillerinde.</p>
+</main>
+<script>
+// İSİM DEĞİŞTİRMEK İÇİN: yukarıdaki .center içindeki "Nazlı ♡" yazısını düzenle.
+// MESAJ DEĞİŞTİRMEK İÇİN: "iyi ki varsın" yazısını düzenle.
+// RENK DEĞİŞTİRMEK İÇİN: CSS içindeki .word {fill:#ff6577} değerini düzenle.
+const phrases=[
+"Seni seviyorum","I love you","Je t’aime","Te amo","Ti amo","Ich liebe dich",
+"사랑해","愛してる","我爱你","Я тебя люблю","Eu te amo","Σ’ αγαπώ",
+"Aku cinta kamu","Anh yêu em","Kocham cię","Ik hou van jou",
+"Jag älskar dig","मैं तुमसे प्यार करता हूँ","ฉันรักเธอ","أحبك"
+];
+const ns="http://www.w3.org/2000/svg", holder=document.getElementById("words");
+const center=document.getElementById("center"), beat=document.getElementById("beat");
+let timers=[], playing=true;
+function heartPoint(t){
+  return {x:400+16*17*Math.pow(Math.sin(t),3),
+  y:290-17*(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))};
+}
+function makeWords(){
+ holder.replaceChildren();
+ // Kalbin dış çizgisini takip eden yazılar
+ const total=115;
+ for(let i=0;i<total;i++){
+  const t=i/total*Math.PI*2, p=heartPoint(t);
+  const e=document.createElementNS(ns,"text");
+  e.setAttribute("class","word");e.setAttribute("x",p.x);e.setAttribute("y",p.y);
+  e.setAttribute("font-size",i%5===0?"12":"11");
+  e.textContent=phrases[(i*7+Math.floor(i/9))%phrases.length];
+  holder.append(e);
+ }
+ // Kalbin üst loblarına küçük yazı kümeleri
+ for(let i=0;i<55;i++){
+  const t=(i+.5)/55*Math.PI*2,p=heartPoint(t);
+  const e=document.createElementNS(ns,"text");
+  const k=.87;
+  e.setAttribute("class","word");
+  e.setAttribute("x",400+(p.x-400)*k);
+  e.setAttribute("y",290+(p.y-290)*k);
+  e.setAttribute("font-size","10");
+  e.textContent=phrases[(i*3+4)%phrases.length];
+  holder.append(e);
+ }
+}
+function start(){
+ timers.forEach(clearTimeout);timers=[];center.classList.remove("show");beat.classList.remove("beating");
+ const words=[...holder.children];
+ words.forEach(w=>w.classList.remove("visible"));
+ // Kalp yukarıdan aşağıya ve iki taraftan aynı anda oluşur
+ const ordered=[...words].sort((a,b)=>Number(a.getAttribute("y"))-Number(b.getAttribute("y")));
+ ordered.forEach((w,i)=>timers.push(setTimeout(()=>w.classList.add("visible"),250+i*24)));
+ timers.push(setTimeout(()=>{center.classList.add("show");if(playing)beat.classList.add("beating")},250+ordered.length*24+250));
+}
+makeWords();start();
+document.getElementById("replay").onclick=start;
+document.getElementById("toggle").onclick=()=>{
+ playing=!playing;beat.classList.toggle("beating",playing&&center.classList.contains("show"));
+ document.getElementById("toggle").textContent=playing?"♡ Kalbi durdur":"♡ Kalbi oynat";
+};
+const stage=document.getElementById("stage");
+for(let i=0;i<24;i++){
+ const s=document.createElement("span");s.className="spark";
+ s.style.left=(8+(i*37%85))+"%";s.style.top=(10+(i*29%78))+"%";
+ s.style.animationDelay=(i%9*.4)+"s";stage.append(s);
+}
+</script>
+</body>
+</html>
