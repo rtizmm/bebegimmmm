@@ -13,9 +13,11 @@ h1{font-size:clamp(23px,4vw,36px);font-weight:500;letter-spacing:.07em;margin:0;
 .sub{font-size:12px;color:#c58b99;text-align:center;margin:8px 0 0}
 .stage{width:min(96vw,800px);height:min(70vh,650px);min-height:350px;position:relative;isolation:isolate}
 #heart{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 0 7px #f43b5060)}
-.word{fill:#ff6577;font-family:Arial,sans-serif;font-size:12px;font-weight:600;text-anchor:middle;opacity:0;transition:opacity .6s ease;user-select:none}
+.word{fill:#ff6577;font-family:Arial,sans-serif;font-size:12px;font-weight:600;text-anchor:start;opacity:0;transition:opacity .6s ease;user-select:none}
 .word.visible{opacity:1}.word.glow{fill:#ff99a5}
-
+.center{position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);text-align:center;opacity:0;transition:opacity 1.4s;pointer-events:none;white-space:nowrap}
+.center.show{opacity:1}.center strong{font-family:Georgia,serif;font-style:italic;font-weight:400;font-size:clamp(22px,4vw,39px);color:#ffd6df;text-shadow:0 0 25px #f04d7188}
+.center small{display:block;font-size:11px;letter-spacing:.2em;color:#c68b9a;margin-top:8px}
 #beat{transform-origin:50% 50%}#beat.beating{animation:beat 2.6s ease-in-out infinite}@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.045)}22%{transform:scale(1)}32%{transform:scale(1.025)}45%{transform:scale(1)}}
 .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:-14px;z-index:2}
 button{border:1px solid #8e3d50;background:#32131e;color:#ffe0e6;padding:11px 19px;border-radius:999px;font-size:13px;cursor:pointer;transition:.2s}button:hover{background:#542132;transform:translateY(-2px)}
@@ -37,7 +39,7 @@ button{border:1px solid #8e3d50;background:#32131e;color:#ffe0e6;padding:11px 19
 
 </div>
 <div class="controls"><button id="replay">↻ Yeniden oynat</button><button id="toggle">♡ Kalbi durdur</button></div>
-<p class="note">Senin için, sevginin bütün dillerinde.</p>
+<p class="note">snı cok sevıorrmm</p>
 </main>
 <script>
 // RENK DEĞİŞTİRMEK İÇİN: CSS içindeki .word {fill:#ff6577} değerini düzenle.
@@ -56,20 +58,46 @@ function heartPoint(t){
 }
 function makeWords(){
  holder.replaceChildren();
- // Kalbin tamamını yazılarla doldur. Yazılar taşmadan kalp içine sığar.
- let i=0;
- for(let y=72;y<=555;y+=19){
-  const stagger=(Math.round(y/19)%2)*27;
-  for(let x=125+stagger;x<=675;x+=54){
-   const nx=(x-400)/272, ny=(290-y)/272;
-   // Kalbin standart parametrik siluetinin içini satır satır doldur
-   const inside=Math.pow(nx*nx+ny*ny-1,3)-nx*nx*ny*ny*ny<=0;
-   if(!inside)continue;
+ // Kalbin gerçek dış hattından yatay satır aralıklarını hesapla.
+ const outline=Array.from({length:1600},(_,i)=>heartPoint(i*2*Math.PI/1600));
+ let serial=0;
+ for(let y=72;y<=555;y+=17){
+  const cuts=[];
+  for(let i=0;i<outline.length;i++){
+   const a=outline[i],b=outline[(i+1)%outline.length];
+   if((a.y<=y&&b.y>y)||(b.y<=y&&a.y>y)){
+    cuts.push(a.x+(y-a.y)*(b.x-a.x)/(b.y-a.y));
+   }
+  }
+  cuts.sort((a,b)=>a-b);
+  for(let j=0;j+1<cuts.length;j+=2){
+   const left=cuts[j]+7, right=cuts[j+1]-7, width=right-left;
+   if(width<30)continue;
+   // Her satır tek bir SVG metni: üst üste binme olmaz.
    const e=document.createElementNS(ns,"text");
-   e.setAttribute("class","word");e.setAttribute("x",x);e.setAttribute("y",y);
-   e.setAttribute("font-size","10");
-   e.textContent=phrases[(i*7+Math.floor(i/9))%phrases.length];
-   holder.append(e);i++;
+   e.setAttribute("class","word");
+   e.setAttribute("x",left);
+   e.setAttribute("y",y);
+   e.setAttribute("text-anchor","start");
+   e.setAttribute("font-size","12");
+   let line="", k=0;
+   while(k<20){
+    const next=phrases[(serial+k*7)%phrases.length];
+    const candidate=line?line+"  "+next:next;
+    e.textContent=candidate;
+    if(e.getComputedTextLength()>width)break;
+    line=candidate;k++;
+   }
+   // Dar bölgelerde metni yalnızca gerektiği kadar küçült.
+   if(!line){
+    line=phrases[serial%phrases.length];
+    e.textContent=line;
+    e.setAttribute("textLength",width);
+    e.setAttribute("lengthAdjust","spacingAndGlyphs");
+   }else{
+    e.textContent=line;
+   }
+   holder.append(e);serial++;
   }
  }
 }
@@ -79,8 +107,8 @@ function start(){
  words.forEach(w=>w.classList.remove("visible"));
  // Kalp yukarıdan aşağıya ve iki taraftan aynı anda oluşur
  const ordered=[...words].sort((a,b)=>Number(a.getAttribute("y"))-Number(b.getAttribute("y")));
- ordered.forEach((w,i)=>timers.push(setTimeout(()=>w.classList.add("visible"),250+i*12)));
- timers.push(setTimeout(()=>{if(playing)beat.classList.add("beating")},250+ordered.length*12+250));
+ ordered.forEach((w,i)=>timers.push(setTimeout(()=>w.classList.add("visible"),250+i*38)));
+ timers.push(setTimeout(()=>{if(playing)beat.classList.add("beating")},250+ordered.length*38+250));
 }
 makeWords();start();
 document.getElementById("replay").onclick=start;
