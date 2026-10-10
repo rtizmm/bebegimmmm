@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080503">
+<title>ışık çiçeğim ♡</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#080503;color:#ffe7cd;font-family:Arial,sans-serif}
+body{background:radial-gradient(ellipse at 50% 47%,#1a0e04 0%,#0b0603 43%,#080503 75%)}
+main{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 12px 30px}
+nav{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:5px;border:1px solid #49311a;border-radius:30px;margin-bottom:24px;background:#160e08;max-width:100%}
+nav a,nav span{padding:10px 14px;border-radius:24px;color:#b39575;font-size:12px;text-decoration:none}nav a:hover{color:#fff0dc}nav span{background:#4d2c10;color:#ffe0a4}
+h1{font-size:clamp(25px,4vw,36px);font-weight:500;letter-spacing:.07em;margin:0;text-align:center}
+.scene{width:min(94vw,780px,66svh);aspect-ratio:1;margin:8px 0}
+canvas{display:block;width:100%;height:100%}
+.hint{font-size:11px;letter-spacing:.06em;color:#a08361;margin:0 0 20px;text-align:center}
+.controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+button,.back{border:1px solid #71502b;background:#251609;color:#fbd7a3;padding:11px 17px;border-radius:999px;font:13px Arial,sans-serif;cursor:pointer;text-decoration:none;transition:background .2s}
+button:hover,.back:hover{background:#3b240d}a:focus-visible,button:focus-visible{outline:2px solid #ffc86e;outline-offset:4px}
+.note{font-size:12px;color:#bc956a;text-align:center;margin:18px 0 0}
+@media(max-width:600px){main{padding:20px 10px}.scene{width:96vw}nav a,nav span{padding:10px 11px}}
+</style>
+</head>
+<body>
+<main>
+<nav aria-label="Animasyon sayfaları"><a href="./index.html">Yazılardan kalp</a><a href="./boncuk.html">Boncuk kalp</a><span aria-current="page">Işık çiçeği</span></nav>
+<!-- BAŞLIK ve ALT MESAJ: İstersen bu yazıları değiştirebilirsin. -->
+<h1>bebegimmm ♡</h1>
+<div class="scene"><canvas id="flower" role="img" aria-label="Sarıdan turuncuya ve kırmızıya dönüşen çizgilerle adım adım oluşan ışık çiçeği">Tarayıcın bu animasyonu desteklemiyor.</canvas></div>
+<p class="hint">senin için, çizgi çizgi</p>
+<div class="controls"><a class="back" href="./index.html">← Ana sayfa</a><button id="replay" type="button">↻ Yeniden çiz</button><button id="motion" type="button" aria-pressed="false">♡ Durdur</button></div>
+<p class="note">snı cok sevıorrmm</p>
+</main>
+<script>
+(()=>{
+'use strict';
+const canvas=document.getElementById('flower'),ctx=canvas.getContext('2d'),motion=document.getElementById('motion'),replay=document.getElementById('replay');
+if(!ctx){document.querySelector('.hint').textContent='Bu tarayıcı animasyonu desteklemiyor.';motion.disabled=replay.disabled=true;return}
+// Referanstaki çizim: 150 çizgi, her adımda 165° dönüş, giderek artan uzunluk.
+// SÜRE: DRAW çizim süresi, HOLD tamamlanınca bekleme, FADE yeniden başlamadan solma.
+const COUNT=150,DRAW=11250,HOLD=2400,FADE=850,CYCLE=DRAW+HOLD+FADE;
+const reduced=matchMedia('(prefers-reduced-motion: reduce)'),lines=[];
+let x=0,y=0,heading=0,minX=0,maxX=0,minY=0,maxY=0;
+for(let i=0;i<COUNT;i++){
+ const nx=x+Math.cos(heading)*i*2.8,ny=y+Math.sin(heading)*i*2.8;
+ lines.push({x,y,nx,ny,color:`hsl(${43.2*(1-i/COUNT)} 100% 50%)`});
+ x=nx;y=ny;heading+=165*Math.PI/180;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+}
+let width=1,height=1,elapsed=reduced.matches?DRAW:0,paused=reduced.matches,frame=null,lastTime=0;
+function render(){
+ ctx.clearRect(0,0,width,height);
+ const time=elapsed%CYCLE,progress=Math.min(COUNT,time/DRAW*COUNT),whole=Math.floor(progress),fraction=progress-whole;
+ const scale=Math.min(width,height)*.84/Math.max(maxX-minX,maxY-minY);
+ ctx.save();ctx.translate(width/2-(minX+maxX)/2*scale,height/2-(minY+maxY)/2*scale);ctx.scale(scale,scale);
+ ctx.globalAlpha=time>DRAW+HOLD?1-(time-DRAW-HOLD)/FADE:1;
+ ctx.lineWidth=Math.max(.7,width/650)/scale;ctx.lineCap='round';
+ let tipX=0,tipY=0;
+ for(let i=0;i<Math.min(COUNT,whole+1);i++){
+  const line=lines[i],part=i<whole?1:fraction;tipX=line.x+(line.nx-line.x)*part;tipY=line.y+(line.ny-line.y)*part;
+  ctx.strokeStyle=line.color;ctx.beginPath();ctx.moveTo(line.x,line.y);ctx.lineTo(tipX,tipY);ctx.stroke();
+ }
+ if(time<DRAW){
+  const radius=9/scale,glow=ctx.createRadialGradient(tipX,tipY,0,tipX,tipY,radius);
+  glow.addColorStop(0,'#fff9c0');glow.addColorStop(.18,'#fff464');glow.addColorStop(.4,'#ffc12b88');glow.addColorStop(1,'#ffab0000');
+  ctx.fillStyle=glow;ctx.beginPath();ctx.arc(tipX,tipY,radius,0,Math.PI*2);ctx.fill();
+ }
+ ctx.restore();
+}
+function tick(time){frame=null;if(paused||document.hidden){lastTime=0;return}if(lastTime)elapsed=(elapsed+Math.min(time-lastTime,50))%CYCLE;lastTime=time;render();frame=requestAnimationFrame(tick)}
+function sync(){if(frame!==null)cancelAnimationFrame(frame);frame=null;lastTime=0;motion.textContent=paused?'♡ Devam et':'♡ Durdur';motion.setAttribute('aria-pressed',String(paused));if(!paused&&!document.hidden)frame=requestAnimationFrame(tick)}
+function resize(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);width=rect.width;height=rect.height;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);render()}
+motion.addEventListener('click',()=>{paused=!paused;sync()});
+replay.addEventListener('click',()=>{elapsed=reduced.matches?DRAW:0;paused=reduced.matches;render();sync()});
+reduced.addEventListener('change',e=>{paused=e.matches;if(paused)elapsed=DRAW;render();sync()});
+document.addEventListener('visibilitychange',sync);new ResizeObserver(resize).observe(canvas);resize();sync();
+})();
+</script>
+</body>
+</html>
