@@ -30,6 +30,7 @@ button:hover{background:#39131c;border-color:#b34b58}button:focus-visible{outlin
 .note{font-size:12px;color:#c58b94;text-align:center;margin:18px 0 0}
 @media(max-width:600px){main{padding:24px 10px}.stage{width:96vw;margin:20px 0 24px}button{padding:11px 16px}}
 @media(prefers-reduced-motion:reduce){.running #beat,.running .word{animation:none}.word{opacity:1}button{transition:none}}
+.destinations{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:15px}.destinations .bead-link{margin-top:0}.flower-link{border-color:#8c5925;background:linear-gradient(135deg,#482710,#25120b);color:#ffd798}.flower-link:hover{background:#593014}
 </style>
 </head>
 <body>
@@ -44,7 +45,7 @@ button:hover{background:#39131c;border-color:#b34b58}button:focus-visible{outlin
 <div class="controls"><button id="replay" type="button">↻ Yeniden oynat</button><button id="toggle" type="button" aria-pressed="false">♡ Kalbi durdur</button></div>
 <!-- ALT MESAJ: Buradaki yazıyı değiştirebilirsin. -->
 <p class="note">snı cok sevıorrmm</p>
-<a class="bead-link" href="./boncuk.html">✦ Boncuk kalp <span aria-hidden="true">→</span></a>
+<div class="destinations"><a class="bead-link" href="./boncuk.html">✦ Boncuk kalp <span aria-hidden="true">→</span></a><a class="bead-link flower-link" href="./cicek.html">☀ Işık çiçeği <span aria-hidden="true">→</span></a></div>
 </main>
 <script>
 const phrases=["Seni seviyorum","I love you","Je t’aime","Te amo","Ti amo","Ich liebe dich","사랑해","愛してる","我爱你","Я тебя люблю","Eu te amo","Σ’ αγαπώ","Aku cinta kamu","Anh yêu em","Kocham cię","Ik hou van jou","Jag älskar dig","मैं तुमसे प्यार करता हूँ","ฉันรักเธอ","أحبك","Seni sevirəm","Te iubesc","Miluji tě","Szeretlek","Mahal kita"];
