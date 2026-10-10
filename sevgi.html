@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080407">
+<title>sevgi halkaları ♡</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#080407;color:#ffe3ee;font-family:Arial,sans-serif}
+body{background:radial-gradient(ellipse at 50% 47%,#230c19 0%,#10060c 43%,#080407 75%)}
+main{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 12px 30px}
+nav{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:5px;border:1px solid #522338;border-radius:30px;margin-bottom:24px;background:#1b0b13;max-width:100%}
+nav a,nav span{padding:10px 14px;border-radius:24px;color:#b88d9f;font-size:12px;text-decoration:none}nav a:hover{color:#fff0f6}nav span{background:#542039;color:#ffcee2}
+h1{font-size:clamp(25px,4vw,36px);font-weight:500;letter-spacing:.07em;margin:0;text-align:center}
+.scene{width:min(94vw,780px,66svh);aspect-ratio:1;margin:8px 0}
+canvas{display:block;width:100%;height:100%}
+.hint{font-size:11px;letter-spacing:.06em;color:#af8094;margin:0 0 20px;text-align:center}
+.controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+button,.back{border:1px solid #77334f;background:#2b1020;color:#ffd0e3;padding:11px 17px;border-radius:999px;font:13px Arial,sans-serif;cursor:pointer;text-decoration:none;transition:background .2s}
+button:hover,.back:hover{background:#462038}a:focus-visible,button:focus-visible{outline:2px solid #ff9dc6;outline-offset:4px}
+.note{font-size:12px;color:#c590a6;text-align:center;margin:18px 0 0}
+@media(max-width:600px){main{padding:20px 10px}.scene{width:96vw}nav a,nav span{padding:10px 11px}}
+</style>
+</head>
+<body>
+<main>
+<nav aria-label="Animasyon sayfaları"><a href="./index.html">Yazılardan kalp</a><a href="./boncuk.html">Boncuk kalp</a><a href="./cicek.html">Işık çiçeği</a><span aria-current="page">Sevgi halkaları</span></nav>
+<!-- BAŞLIK ve ALT MESAJ: İstersen bu yazıları değiştirebilirsin. -->
+<h1>bebegimmm ♡</h1>
+<div class="scene"><canvas id="rings" role="img" aria-label="Pembe I love you yazılarıyla sırayla çizilen, iç içe altı kalp halkası">Tarayıcın bu animasyonu desteklemiyor.</canvas></div>
+<p class="hint">her halkasında, seni seviyorum</p>
+<div class="controls"><a class="back" href="./index.html">← Ana sayfa</a><button id="replay" type="button">↻ Yeniden çiz</button><button id="motion" type="button" aria-pressed="false">♡ Durdur</button></div>
+<p class="note">snı cok sevıorrmm</p>
+</main>
+<script>
+(()=>{
+'use strict';
+const canvas=document.getElementById('rings'),ctx=canvas.getContext('2d'),motion=document.getElementById('motion'),replay=document.getElementById('replay');
+if(!ctx){document.querySelector('.hint').textContent='Bu tarayıcı animasyonu desteklemiyor.';motion.disabled=replay.disabled=true;return}
+// Referanstaki gibi: 11–16 ölçeğinde altı katman, her halkada 120 yazı.
+// YAZI ve SÜRE: Buradaki değerleri değiştirerek özelleştirebilirsin.
+const WORD='I love you',COUNT=720,DRAW=14400,HOLD=2800,FADE=900,CYCLE=DRAW+HOLD+FADE;
+const reduced=matchMedia('(prefers-reduced-motion: reduce)'),points=[];
+for(let layer=11;layer<=16;layer++)for(let i=0;i<120;i++){
+ const angle=i*Math.PI*2/120;
+ points.push({x:16*Math.sin(angle)**3*layer,y:(13*Math.cos(angle)-5*Math.cos(2*angle)-2*Math.cos(3*angle)-Math.cos(4*angle))*layer,layer});
+}
+let width=1,height=1,elapsed=reduced.matches?DRAW:0,paused=reduced.matches,frame=null,lastTime=0;
+function render(){
+ ctx.clearRect(0,0,width,height);
+ const time=elapsed%CYCLE,progress=Math.min(COUNT,time/DRAW*COUNT),count=Math.floor(progress),scale=Math.min(width,height)*.86/552;
+ const opacity=time>DRAW+HOLD?1-(time-DRAW-HOLD)/FADE:1;
+ ctx.save();ctx.translate(width/2,height*.46);ctx.scale(scale,scale);
+ ctx.font='bold 9px Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+ for(let i=0;i<count;i++){
+  const p=points[i];ctx.globalAlpha=opacity*.78;
+  ctx.fillStyle=['#ffb6c1','#ef9fb9','#ffc3d4','#eeb0cd','#ffcada','#ffb6c1'][p.layer-11];
+  ctx.fillText(WORD,p.x,-p.y);
+ }
+ if(count<COUNT){
+  const p=points[count];ctx.globalAlpha=opacity*(progress-count);ctx.fillStyle='#fff0f6';ctx.fillText(WORD,p.x,-p.y);
+ }
+ ctx.restore();
+}
+function tick(time){frame=null;if(paused||document.hidden){lastTime=0;return}if(lastTime)elapsed=(elapsed+Math.min(time-lastTime,50))%CYCLE;lastTime=time;render();frame=requestAnimationFrame(tick)}
+function sync(){if(frame!==null)cancelAnimationFrame(frame);frame=null;lastTime=0;motion.textContent=paused?'♡ Devam et':'♡ Durdur';motion.setAttribute('aria-pressed',String(paused));if(!paused&&!document.hidden)frame=requestAnimationFrame(tick)}
+function resize(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);width=rect.width;height=rect.height;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);render()}
+motion.addEventListener('click',()=>{paused=!paused;sync()});
+replay.addEventListener('click',()=>{elapsed=reduced.matches?DRAW:0;paused=reduced.matches;render();sync()});
+reduced.addEventListener('change',e=>{paused=e.matches;if(paused)elapsed=DRAW;render();sync()});
+document.addEventListener('visibilitychange',sync);new ResizeObserver(resize).observe(canvas);resize();sync();
+})();
+</script>
+</body>
+</html>
