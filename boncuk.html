@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070304">
+<title>boncuk kalbim ♡</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#070304;color:#ffe4e8;font-family:Arial,sans-serif}
+body{background:radial-gradient(ellipse at 50% 46%,#1d070c 0%,#0d0406 43%,#070304 74%)}
+main{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px 30px}
+nav{display:flex;justify-content:center;gap:6px;padding:5px;border:1px solid #482029;border-radius:30px;margin-bottom:26px;background:#16090dc9}
+nav a,nav span{padding:10px 16px;border-radius:24px;color:#b98892;font-size:12px;text-decoration:none}nav a:hover{color:#fff0f2}nav span{background:#4b1724;color:#ffe0e5}
+h1{font-size:clamp(25px,4vw,36px);font-weight:500;letter-spacing:.07em;margin:0;text-align:center}
+.scene{width:min(94vw,780px,66svh);aspect-ratio:1;position:relative;margin:8px 0 0}
+canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab}canvas:active{cursor:grabbing}
+.hint{font-size:11px;letter-spacing:.06em;color:#99707b;margin:0 0 20px;text-align:center}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+button,.back{border:1px solid #6b2931;background:#210d12;color:#f9cbd0;padding:11px 19px;border-radius:999px;font:13px Arial,sans-serif;cursor:pointer;text-decoration:none;transition:background .2s}
+button:hover,.back:hover{background:#39131c}a:focus-visible,button:focus-visible,canvas:focus-visible{outline:2px solid #ff8b92;outline-offset:4px}
+.note{font-size:12px;color:#c58b94;text-align:center;margin:18px 0 0}
+@media(max-width:600px){main{padding:20px 12px}nav{margin-bottom:26px}.scene{width:96vw;max-width:620px}nav a,nav span{padding:10px 13px}}
+</style>
+</head>
+<body>
+<main>
+<nav aria-label="Kalp sayfaları"><a href="./index.html">Yazılardan kalp</a><span aria-current="page">Boncuk kalp</span></nav>
+<h1>bebegimmm ♡</h1>
+<div class="scene"><canvas id="beads" role="img" aria-label="Kırmızı boncuklardan oluşan, üç boyutlu ve sürekli dönen kalp" tabindex="0">Tarayıcın bu animasyonu desteklemiyor.</canvas></div>
+<p class="hint">dokun, çevir · her açıdan sen</p>
+<div class="controls"><a class="back" href="./index.html">← Ana sayfa</a><button id="motion" type="button" aria-pressed="false">♡ Dönüşü durdur</button></div>
+<p class="note">snı cok sevıorrmm</p>
+</main>
+<script>
+(()=>{
+'use strict';
+const canvas=document.getElementById('beads'),ctx=canvas.getContext('2d'),button=document.getElementById('motion');
+if(!ctx){document.querySelector('.hint').textContent='Bu tarayıcı animasyonu desteklemiyor.';button.disabled=true;return}
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+let width=1,height=1,angle=0,paused=reduced.matches,dragging=false,pointer=null,lastX=0,frame=null,lastTime=0;
+// AYARLAR: Boncuk sayısı ve dönüş hızı buradan değiştirilebilir.
+const COUNT=2200,SPEED=.48,TAU=Math.PI*2;
+let seed=240610;
+function random(){seed=(1664525*seed+1013904223)>>>0;return seed/4294967296}
+// Referanstaki kalp denklemi. Z ekseni noktaları hacimli bir buluta dönüştürür.
+const points=Array.from({length:COUNT},()=>{
+ const t=random()*TAU,r=Math.sqrt(random());
+ return{x:1.6*Math.sin(t)**3*r,y:(1.3*Math.cos(t)-.5*Math.cos(2*t)-.2*Math.cos(3*t)-.1*Math.cos(4*t))*r,z:1.1*(1-r)*(random()*2-1),size:.78+random()*.45,depth:0,sx:0,sy:0};
+});
+// Boncuk ışığı önceden çizilir; her karede binlerce yeni gradyan üretilmez.
+const sprites=Array.from({length:16},(_,i)=>{
+ const sprite=document.createElement('canvas');sprite.width=sprite.height=32;
+ const c=sprite.getContext('2d'),light=i/15;
+ const halo=c.createRadialGradient(16,16,2,16,16,16);
+ halo.addColorStop(0,'rgba(255,35,65,.28)');halo.addColorStop(1,'rgba(255,20,45,0)');c.fillStyle=halo;c.fillRect(0,0,32,32);
+ const bead=c.createRadialGradient(13,12,0,16,16,8);
+ bead.addColorStop(0,`rgb(${Math.round(150+105*light)},${Math.round(18+85*light)},${Math.round(32+78*light)})`);
+ bead.addColorStop(.42,`rgb(${Math.round(100+150*light)},${Math.round(6+27*light)},${Math.round(22+43*light)})`);
+ bead.addColorStop(1,`rgb(${Math.round(48+98*light)},3,23)`);
+ c.fillStyle=bead;c.beginPath();c.arc(16,16,8,0,TAU);c.fill();return sprite;
+});
+function render(){
+ ctx.clearRect(0,0,width,height);
+ const ct=Math.cos(angle),st=Math.sin(angle),scale=Math.min(width,height)*.255;
+ for(const p of points){
+  const x=p.x*ct+p.z*st,z=-p.x*st+p.z*ct,perspective=5/(5-z*.3);
+  p.depth=z;p.sx=width/2+x*scale*perspective;p.sy=height*.455-p.y*scale*perspective;
+ }
+ points.sort((a,b)=>a.depth-b.depth);
+ for(const p of points){
+  const light=Math.max(0,Math.min(1,(p.depth+1.65)/3.3)),size=(1.35+light*1.85)*p.size*(width/600);
+  const diameter=size*4;
+  ctx.globalAlpha=.52+light*.48;
+  ctx.drawImage(sprites[Math.round(light*15)],p.sx-diameter/2,p.sy-diameter/2,diameter,diameter);
+ }
+ ctx.globalAlpha=1;
+}
+function tick(time){
+ frame=null;if(paused||document.hidden||dragging){lastTime=0;return}
+ if(lastTime)angle=(angle+Math.min((time-lastTime)/1000,.05)*SPEED)%TAU;
+ lastTime=time;render();frame=requestAnimationFrame(tick);
+}
+function sync(){
+ if(frame!==null)cancelAnimationFrame(frame);frame=null;lastTime=0;
+ button.textContent=paused?'♡ Dönüşü başlat':'♡ Dönüşü durdur';button.setAttribute('aria-pressed',String(paused));
+ if(!paused&&!document.hidden&&!dragging)frame=requestAnimationFrame(tick);
+}
+function resize(){
+ const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);
+ width=rect.width;height=rect.height;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
+ ctx.setTransform(dpr,0,0,dpr,0,0);render();
+}
+button.addEventListener('click',()=>{paused=!paused;sync()});
+canvas.addEventListener('pointerdown',e=>{if(e.button!==0||dragging)return;pointer=e.pointerId;dragging=true;lastX=e.clientX;canvas.setPointerCapture(pointer);sync()});
+canvas.addEventListener('pointermove',e=>{if(!dragging||e.pointerId!==pointer)return;angle+=(e.clientX-lastX)*.009;lastX=e.clientX;render()});
+function release(e){if(e.pointerId!==pointer)return;pointer=null;dragging=false;sync()}
+canvas.addEventListener('pointerup',release);canvas.addEventListener('pointercancel',release);canvas.addEventListener('lostpointercapture',release);
+canvas.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();angle+=e.key==='ArrowLeft'?-.15:.15;render()}});
+reduced.addEventListener('change',e=>{paused=e.matches;sync()});
+document.addEventListener('visibilitychange',sync);
+new ResizeObserver(resize).observe(canvas);resize();sync();
+})();
+</script>
+</body>
+</html>
