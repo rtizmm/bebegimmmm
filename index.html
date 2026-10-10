@@ -26,6 +26,7 @@ h1{font-size:clamp(25px,4vw,36px);font-weight:500;letter-spacing:.07em;margin:0;
 .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 button{border:1px solid #6b2931;background:#210d12;color:#f9cbd0;padding:11px 19px;border-radius:999px;font:13px Arial,sans-serif;cursor:pointer;transition:background .2s,border-color .2s}
 button:hover{background:#39131c;border-color:#b34b58}button:focus-visible{outline:2px solid #ff8b92;outline-offset:4px}
+.bead-link{display:inline-flex;align-items:center;gap:8px;margin-top:15px;padding:12px 22px;border:1px solid #9c3545;border-radius:999px;background:linear-gradient(135deg,#511522,#290e16);color:#ffccd3;text-decoration:none;font-size:13px;transition:background .2s,transform .2s}.bead-link:hover{background:#661d2c;transform:translateY(-2px)}.bead-link:focus-visible{outline:2px solid #ff8b92;outline-offset:4px}
 .note{font-size:12px;color:#c58b94;text-align:center;margin:18px 0 0}
 @media(max-width:600px){main{padding:24px 10px}.stage{width:96vw;margin:20px 0 24px}button{padding:11px 16px}}
 @media(prefers-reduced-motion:reduce){.running #beat,.running .word{animation:none}.word{opacity:1}button{transition:none}}
@@ -43,6 +44,7 @@ button:hover{background:#39131c;border-color:#b34b58}button:focus-visible{outlin
 <div class="controls"><button id="replay" type="button">↻ Yeniden oynat</button><button id="toggle" type="button" aria-pressed="false">♡ Kalbi durdur</button></div>
 <!-- ALT MESAJ: Buradaki yazıyı değiştirebilirsin. -->
 <p class="note">snı cok sevıorrmm</p>
+<a class="bead-link" href="./boncuk.html">✦ Boncuk kalp <span aria-hidden="true">→</span></a>
 </main>
 <script>
 const phrases=["Seni seviyorum","I love you","Je t’aime","Te amo","Ti amo","Ich liebe dich","사랑해","愛してる","我爱你","Я тебя люблю","Eu te amo","Σ’ αγαπώ","Aku cinta kamu","Anh yêu em","Kocham cię","Ik hou van jou","Jag älskar dig","मैं तुमसे प्यार करता हूँ","ฉันรักเธอ","أحبك","Seni sevirəm","Te iubesc","Miluji tě","Szeretlek","Mahal kita"];
