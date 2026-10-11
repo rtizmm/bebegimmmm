@@ -3,11 +3,37 @@
 const mode=document.body.dataset.scene,reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const active=document.querySelector('.scene-nav [aria-current]');if(active)active.parentElement.scrollLeft=Math.max(0,active.offsetLeft-active.parentElement.offsetLeft-active.parentElement.clientWidth/2+active.clientWidth/2);
 if(mode==='mektup'){
- const envelope=document.getElementById('open-letter'),letter=document.getElementById('letter'),answer=document.getElementById('answer'),question=document.getElementById('question'),choices=document.getElementById('choices'),reset=document.getElementById('reset-letter'),rain=document.getElementById('confetti');
- envelope.onclick=()=>{envelope.hidden=true;letter.hidden=false;document.getElementById('yes').focus({preventScroll:true})};
- function respond(yes){question.textContent=yes?'iyi ki sen, iyi ki biz ♡':'tamam bebegimm ♡';answer.textContent=yes?'nazlimm bebegimm askimmm, snı cok seviyorumm ♡':'bir sarılma da olur, mektubum hep burada ♡';answer.hidden=false;choices.hidden=true;reset.hidden=false;reset.focus({preventScroll:true});if(yes&&!reduced.matches){rain.replaceChildren();for(let i=0;i<24;i++){const heart=document.createElement('span');heart.textContent='♥';heart.style.left=(i*43%100)+'%';heart.style.animationDelay=(i%7)*.12+'s';rain.append(heart)}setTimeout(()=>rain.replaceChildren(),3800)}}
- document.getElementById('yes').onclick=()=>respond(true);document.getElementById('no').onclick=()=>respond(false);
- reset.onclick=()=>{question.textContent='hep benim sevgilim olur musun?';answer.hidden=true;choices.hidden=false;reset.hidden=true;rain.replaceChildren();document.getElementById('yes').focus({preventScroll:true})};return;
+ const envelope=document.getElementById('open-letter'),letter=document.getElementById('letter'),answer=document.getElementById('answer'),question=document.getElementById('question'),choices=document.getElementById('choices'),reset=document.getElementById('reset-letter'),rain=document.getElementById('confetti'),yes=document.getElementById('yes'),no=document.getElementById('no');
+ let position={x:0,y:0},lastMove=0;
+ function placeNo(x,y){position={x,y};no.style.transform=`translate(${x}px,${y}px)`}
+ function resetNo(){if(!letter.hidden&&!choices.hidden)placeNo(Math.max(0,choices.clientWidth-no.offsetWidth-8),8)}
+ function evade(event){
+  if(event)event.preventDefault();
+  if(choices.hidden)return;
+  const area=choices.getBoundingClientRect(),yesBox=yes.getBoundingClientRect(),w=no.offsetWidth,h=no.offsetHeight,maxX=Math.max(0,choices.clientWidth-w-4),maxY=Math.max(0,choices.clientHeight-h-4);
+  const px=event&&Number.isFinite(event.clientX)?event.clientX-area.left:position.x+w/2,py=event&&Number.isFinite(event.clientY)?event.clientY-area.top:position.y+h/2;
+  let best=null,score=-1;
+  for(let row=0;row<4;row++)for(let col=0;col<5;col++){
+   const x=4+(maxX-4)*col/4,y=4+(maxY-4)*row/3;
+   if(x<yesBox.right-area.left+14&&x+w>yesBox.left-area.left-14&&y<yesBox.bottom-area.top+14&&y+h>yesBox.top-area.top-14)continue;
+   if(Math.hypot(x-position.x,y-position.y)<25)continue;
+   const distance=Math.hypot(x+w/2-px,y+h/2-py);
+   if(distance>score){score=distance;best={x,y}}
+  }
+  if(best){placeNo(best.x,best.y);lastMove=performance.now()}
+ }
+ envelope.onclick=()=>{envelope.hidden=true;letter.hidden=false;resetNo();yes.focus({preventScroll:true})};
+ no.addEventListener('pointerenter',evade);no.addEventListener('pointerdown',evade);no.addEventListener('click',evade);
+ no.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){evade(event);yes.focus({preventScroll:true})}});
+ choices.addEventListener('pointermove',event=>{if(event.pointerType==='touch'||performance.now()-lastMove<220)return;const box=no.getBoundingClientRect();if(event.clientX>box.left-25&&event.clientX<box.right+25&&event.clientY>box.top-25&&event.clientY<box.bottom+25)evade(event)});
+ window.addEventListener('resize',resetNo);
+ yes.onclick=()=>{
+  question.textContent='iyi ki sen, iyi ki biz ♡';
+  answer.textContent='askimm bebegmmm sen benı terkedene kadar hep senın olacagım sen benden soguyana kadar hep senın olacagım senı cok sevıyorum hayatim senı uzdugum her an ıcın cok ozur dılerım bebegmmmm';
+  answer.hidden=false;choices.hidden=true;reset.hidden=false;reset.focus({preventScroll:true});
+  if(!reduced.matches){rain.replaceChildren();for(let i=0;i<24;i++){const heart=document.createElement('span');heart.textContent='♥';heart.style.left=(i*43%100)+'%';heart.style.animationDelay=(i%7)*.12+'s';rain.append(heart)}setTimeout(()=>rain.replaceChildren(),3800)}
+ };
+ reset.onclick=()=>{question.textContent='hep benim sevgilim olur musun?';answer.hidden=true;choices.hidden=false;reset.hidden=true;rain.replaceChildren();resetNo();yes.focus({preventScroll:true})};return;
 }
 const canvas=document.getElementById('art'),ctx=canvas.getContext('2d'),button=document.getElementById('motion');if(!ctx){button.disabled=true;return}
 const TAU=Math.PI*2;let width=1,height=1,time=0,paused=reduced.matches,last=0,frame=null;
